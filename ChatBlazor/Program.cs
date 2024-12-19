@@ -1,5 +1,12 @@
 using ChatBlazor.Components;
 using ChatBlazor.Hubs;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
+
+
+// TODO: setup db context and identity 
+
 
 var builder = WebApplication.CreateBuilder(args);
 
