@@ -1,15 +1,42 @@
-﻿@using ChatBlazor.Models
+﻿@page "/register"
+@rendermode InteractiveServer
+@using ChatBlazor.Models
+@inject HttpClient HttpClient
+@inject NavigationManager NavigationManager
+
 <h3>Register</h3>
 
 @* todo front end and bind to registerModel *@
 
+<div>
+    <input placeholder="E-mail"  @bind="registerModel.Email"/>
+    <input type="password" placeholder="Password" @bind="registerModel.Password" /><br />
+    <button class="btn btn-primary" @onclick="RegisterUser">Register</button>
+</div>
+
 
 @code {
     private RegisterModel registerModel = new();
-
+    private string errorMessage = string.Empty;
 
     private async Task RegisterUser() {
-        //todo using the identity.net and ef.net
+        try {
+            var response = await HttpClient.PostAsJsonAsync("http://localhost:5082/Account/Register", new { email = registerModel.Email, password = registerModel.Password });
+
+            if (response.IsSuccessStatusCode) {
+                //success
+                Console.WriteLine("Registraion working");
+            }
+            else {
+                var errors = await response.Content.ReadFromJsonAsync<IEnumerable<string>>();
+
+                errorMessage = string.Join(", ", errors ?? Array.Empty<string>());
+            }
+        }
+        catch (Exception ex) {
+            errorMessage = "Error : " + ex.Message;
+        }
+
     }
 
 
