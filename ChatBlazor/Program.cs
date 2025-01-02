@@ -1,13 +1,17 @@
 using ChatBlazor.Components;
 using ChatBlazor.Hubs;
 using ChatBlazor.Contexts;
-using ChatBlazor.Auth;
+//using ChatBlazor.Auth;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using System.Net;
 using Microsoft.AspNetCore.Components.Authorization;
-
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using Blazored.LocalStorage;
+    
 
 
 
@@ -39,8 +43,27 @@ builder.Services.AddSignalR();
 builder.Services.AddHttpClient();
 builder.Services.AddControllers();
 
-builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthStateProvider>();
+//builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthStateProvider>();
 builder.Services.AddAuthorizationCore();
+
+
+//jwt token setup
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = builder.Configuration["JwtIssuer"],
+            ValidAudience = builder.Configuration["JwtIssuer"],
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JwtKey"]))
+        };
+    });
+
+builder.Services.AddBlazoredLocalStorage();
 
 var app = builder.Build();
 

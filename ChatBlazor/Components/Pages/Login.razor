@@ -1,15 +1,22 @@
 ﻿@page "/login"
 @rendermode InteractiveServer
 @using ChatBlazor.Models
-@using ChatBlazor.Auth;
-@using Microsoft.AspNetCore.Components.Authorization
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Authentication
+@using Microsoft.AspNetCore.Identity
+@using ChatBlazor.Contexts
+
+@inject SignInManager<IdentityUser> SignInManager
+
+
 @inject HttpClient HttpClient
 @inject NavigationManager NavigationManager
-@inject AuthenticationStateProvider AuthStateProvider
+
+
 
 <h3>Login</h3>
 
-<div>
+<div class="row">
     <input placeholder="E-mail" @bind="loginModel.Email" />
     <input type="password" placeholder="Password" @bind="loginModel.Password" /><br />
     <button class="btn btn-primary" @onclick="LoginUser">Login</button>
@@ -26,30 +33,25 @@
     private LoginModel loginModel = new();
     private string errorMessage = string.Empty;
 
+    [CascadingParameter]
+    private HttpContext HttpContext { get; set; } = default!;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (HttpMethods.IsGet(HttpContext.Request.Method))
+        {
+
+        }
+    }
+
+
+
     private async Task LoginUser()
     {
-        try
-        {
-            var response = await HttpClient.PostAsJsonAsync("http://localhost:5082/Account/Login", new { email = loginModel.Email, password = loginModel.Password });
 
-            if (response.IsSuccessStatusCode)
-            {
-                // Assuming the server returns a token
-                var token = await response.Content.ReadAsStringAsync();
-
-                // Store the token and update the auth state
-                await ((CustomAuthStateProvider)AuthStateProvider).MarkUserAsAuthenticated(token,loginModel.Email);
-
-                NavigationManager.NavigateTo("/");
-            }
-            else
-            {
-                errorMessage = "Invalid login attempt";
-            }
-        }
-        catch (Exception ex)
-        {
-            errorMessage = "Error : " + ex.Message;
-        }
+    }
+    public class LoginResult
+    {
+        public string Token { get; set; }
     }
 }

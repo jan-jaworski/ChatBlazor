@@ -1,18 +1,21 @@
 ﻿@page "/"
 @rendermode InteractiveServer
+@* @using Microsoft.AspNetCore.Authorization *@
 
 @using Microsoft.AspNetCore.SignalR.Client
+@* @using Microsoft.AspNetCore.Components.Authorization *@
 @inject NavigationManager NavigationManager
+@* @inject AuthenticationStateProvider AuthStateProvider *@
 @implements IAsyncDisposable
+
 
 <PageTitle>Home</PageTitle>
 
 <div>
-    <input @bind="userInput" placeholder="yr name"/>
-    <input @bind="messageInput" placeholder="message"/>
+    <input @bind="userInput" placeholder="yr name" />
+    <input @bind="messageInput" placeholder="message" />
     <button class="btn btn-primary" @onclick="SendMessage">Send</button>
 </div>
-
 
 <ul>
     @foreach (var message in messages)
@@ -22,14 +25,14 @@
 </ul>
 
 
-
 @code {
     private HubConnection? hubConnection;
     private List<string> messages = new();
     private string? userInput;
     private string? messageInput;
 
-    protected override async Task OnInitializedAsync() {
+    protected override async Task OnInitializedAsync()
+    {
         //signalR connection conf
         hubConnection = new HubConnectionBuilder().WithUrl(NavigationManager.ToAbsoluteUri("/chathub")).Build();
 
@@ -39,20 +42,21 @@
             InvokeAsync(StateHasChanged);
         });
         await hubConnection.StartAsync();
-
     }
 
-    private async Task SendMessage() {
-        if (hubConnection is not null) {
+    private async Task SendMessage()
+    {
+        if (hubConnection is not null)
+        {
             await hubConnection.SendAsync("SendMessage", userInput, messageInput);
         }
     }
 
-    public async ValueTask DisposeAsync() {
-        if (hubConnection is not null) {
+    public async ValueTask DisposeAsync()
+    {
+        if (hubConnection is not null)
+        {
             await hubConnection.DisposeAsync();
         }
     }
-
- 
 }
