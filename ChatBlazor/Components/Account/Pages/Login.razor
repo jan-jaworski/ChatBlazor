@@ -1,57 +1,122 @@
-﻿@page "/login"
-@rendermode InteractiveServer
-@using ChatBlazor.Models
+﻿@page "/Account/Login"
+
 @using System.ComponentModel.DataAnnotations
 @using Microsoft.AspNetCore.Authentication
 @using Microsoft.AspNetCore.Identity
 @using ChatBlazor.Contexts
 
 @inject SignInManager<IdentityUser> SignInManager
-
-
-@inject HttpClient HttpClient
+@inject ILogger<Login> Logger
 @inject NavigationManager NavigationManager
+@inject IdentityRedirectManager RedirectManager
 
+<PageTitle>Log in</PageTitle>
 
-
-<h3>Login</h3>
-
+<h1>Log in</h1>
 <div class="row">
-    <input placeholder="E-mail" @bind="loginModel.Email" />
-    <input type="password" placeholder="Password" @bind="loginModel.Password" /><br />
-    <button class="btn btn-primary" @onclick="LoginUser">Login</button>
+    <div class="col-md-4">
+        <section>
+            <!-- everything can be changed besides the atributes of tags except class ofc 
+                and the tags for validation must stay EditForm and links too 
+            -->
+            <StatusMessage Message="@errorMessage" /> <!-- this to inform the user if an error occurs in backend code -->
+            <EditForm Model="Input" method="post" OnValidSubmit="LoginUser" FormName="login">
+                <DataAnnotationsValidator /> <!-- this is for validation-->
+                <hr />
+                <ValidationSummary class="text-danger" role="alert" /> <!-- this is for validation it shows the summary of errors -->
+                <div class="form-floating mb-3">
+                    <InputText @bind-Value="Input.Email" class="form-control" autocomplete="username" aria-required="true" placeholder="name@example.com" /> <!-- aria required is vor validation system to inform program that this field is required -->
+                    <label for="email" class="form-label">Email</label>
+                    <ValidationMessage For="() => Input.Email" class="text-danger" /> <!-- this validate the e-mail field  this is the place is error shown example: The Email field is not a valid e-mail address. 
+                        you can change the location of it so the message will be shown in diffrent location
+
+                    -->
+                </div>
+                <div class="form-floating mb-3">
+                    <InputText type="password" @bind-Value="Input.Password" class="form-control" autocomplete="current-password" aria-required="true" placeholder="password" />
+                    <label for="password" class="form-label">Password</label>
+                    <ValidationMessage For="() => Input.Password" class="text-danger" /> <!-- this validates the password same as email -->
+                </div>
+                <div class="checkbox mb-3">
+                    <label class="form-label">
+                        <InputCheckbox @bind-Value="Input.RememberMe" class="darker-border-checkbox form-check-input" /> <!-- this is remember session -->
+                        Remember me
+                    </label>
+                </div>
+                <div>
+                    <button type="submit" class="w-100 btn btn-lg btn-primary">Log in</button>
+                </div>
+                <div>
+  
+                    <p>
+                        <a href="@(NavigationManager.GetUriWithQueryParameters("Account/Register", new Dictionary<string, object?> { ["ReturnUrl"] = ReturnUrl }))">Register as a new user</a> <!-- this is register page link -->
+                    </p>
+        
+                </div>
+            </EditForm>
+        </section>
+    </div>
 </div>
 
-
-@if (!string.IsNullOrEmpty(errorMessage))
-{
-    <div class="alert alert-danger">@errorMessage</div>
-}
-
-
 @code {
-    private LoginModel loginModel = new();
-    private string errorMessage = string.Empty;
+    private string? errorMessage;
 
     [CascadingParameter]
     private HttpContext HttpContext { get; set; } = default!;
 
-    // protected override async Task OnInitializedAsync()
-    // {
-    //     if (HttpMethods.IsGet(HttpContext.Request.Method))
-    //     {
+    [SupplyParameterFromForm]
+    private InputModel Input { get; set; } = new();
 
-    //     }
-    // }
+    [SupplyParameterFromQuery]
+    private string? ReturnUrl { get; set; }
 
-
-
-    private async Task LoginUser()
+    protected override async Task OnInitializedAsync()
     {
-
+        if (HttpMethods.IsGet(HttpContext.Request.Method))
+        {
+            // Clear the existing external cookie to ensure a clean login process
+            await HttpContext.SignOutAsync(IdentityConstants.ExternalScheme);
+        }
     }
-    public class LoginResult
+
+    public async Task LoginUser()
     {
-        public string Token { get; set; }
+        // This doesn't count login failures towards account lockout
+        // To enable password failures to trigger account lockout, set lockoutOnFailure: true
+        var result = await SignInManager.PasswordSignInAsync(Input.Email, Input.Password, Input.RememberMe, lockoutOnFailure: false);
+        if (result.Succeeded)
+        {
+            Logger.LogInformation("User logged in.");
+            RedirectManager.RedirectTo(ReturnUrl);
+        }
+        else if (result.RequiresTwoFactor)
+        {
+            RedirectManager.RedirectTo(
+                "Account/LoginWith2fa",
+                new() { ["returnUrl"] = ReturnUrl, ["rememberMe"] = Input.RememberMe });
+        }
+        else if (result.IsLockedOut)
+        {
+            Logger.LogWarning("User account locked out.");
+            RedirectManager.RedirectTo("Account/Lockout");
+        }
+        else
+        {
+            errorMessage = "Error: Invalid login attempt.";
+        }
+    }
+
+    private sealed class InputModel
+    {
+        [Required]
+        [EmailAddress]
+        public string Email { get; set; } = "";
+
+        [Required]
+        [DataType(DataType.Password)]
+        public string Password { get; set; } = "";
+
+        [Display(Name = "Remember me?")]
+        public bool RememberMe { get; set; }
     }
 }

@@ -1,12 +1,13 @@
 ﻿@page "/"
 @rendermode InteractiveServer
-@* @using Microsoft.AspNetCore.Authorization *@
+@using Microsoft.AspNetCore.Authorization
 
 @using Microsoft.AspNetCore.SignalR.Client
-@* @using Microsoft.AspNetCore.Components.Authorization *@
+@using Microsoft.AspNetCore.Components.Authorization
 @inject NavigationManager NavigationManager
-@* @inject AuthenticationStateProvider AuthStateProvider *@
+@inject AuthenticationStateProvider AuthStateProvider
 @implements IAsyncDisposable
+@attribute [Authorize]
 
 
 <PageTitle>Home</PageTitle>
