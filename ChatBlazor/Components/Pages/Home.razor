@@ -1,55 +1,134 @@
 ﻿@page "/"
 @rendermode InteractiveServer
 @using Microsoft.AspNetCore.Authorization
-
+@using Microsoft.AspNetCore.SignalR
 @using Microsoft.AspNetCore.SignalR.Client
 @using Microsoft.AspNetCore.Components.Authorization
+@using ChatBlazor.Utils
+@using ChatBlazor.Models
+@using ChatBlazor.Contexts
+@using Microsoft.AspNetCore.Identity
+@using Blazored.LocalStorage
+@using ChatBlazor.Hubs
+@inject ILocalStorageService LocalStorage
 @inject NavigationManager NavigationManager
 @inject AuthenticationStateProvider AuthStateProvider
-@implements IAsyncDisposable
-@attribute [Authorize]
+@inject UserManager<IdentityUser> UserManager
+@inject AppDbContext DbContext
+@inject IHubContext<ChatHub> HubContext
+@inject IHttpContextAccessor HttpContextAccessor
 
+@attribute [Authorize]
+@implements IAsyncDisposable
 
 <PageTitle>Home</PageTitle>
 
 <div>
-    <input @bind="userInput" placeholder="yr name" />
-    <input @bind="messageInput" placeholder="message" />
+    <input @bind="receiverInput" placeholder="Receiver's username" />
+    <input @bind="messageInput" placeholder="Message" />
     <button class="btn btn-primary" @onclick="SendMessage">Send</button>
 </div>
 
 <ul>
     @foreach (var message in messages)
     {
-        <li>@message</li>
+        <li>@message.Sender.UserName: @message.Text</li>
     }
 </ul>
 
-
 @code {
-    private HubConnection? hubConnection;
-    private List<string> messages = new();
-    private string? userInput;
+    private List<Message> messages = new();
+    private string? receiverInput;
     private string? messageInput;
+    private MessagesManager? messagesManager;
+    private IdentityUser? currentUser;
+    private HubConnection? hubConnection;
+    private bool isInitialized = false;
 
     protected override async Task OnInitializedAsync()
     {
-        //signalR connection conf
-        hubConnection = new HubConnectionBuilder().WithUrl(NavigationManager.ToAbsoluteUri("/chathub")).Build();
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
 
-        hubConnection.On<string, string>("ReceiveMessage", (user, message) =>
+        if (user.Identity?.IsAuthenticated ?? false)
         {
-            messages.Add($"{user}: {message}");
-            InvokeAsync(StateHasChanged);
-        });
-        await hubConnection.StartAsync();
+            currentUser = await UserManager.GetUserAsync(user);
+        }
+        else
+        {
+            Console.WriteLine("User is not authenticated");
+            NavigationManager.NavigateTo("/Identity/Account/Login", true);
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && !isInitialized)
+        {
+            await InitializeHubConnection();
+            isInitialized = true;
+        }
+    }
+
+    private async Task InitializeHubConnection()
+    {
+        if (currentUser != null)
+        {
+            var cookieValue = HttpContextAccessor.HttpContext?.Request.Cookies[".AspNetCore.Identity.Application"];
+            Console.WriteLine($"Cookie value: '{cookieValue}'");
+
+            hubConnection = new HubConnectionBuilder()
+                .WithUrl(NavigationManager.ToAbsoluteUri("/chathub"), options =>
+                {
+                    if (!string.IsNullOrEmpty(cookieValue))
+                    {
+                        options.Headers.Add("Cookie", $".AspNetCore.Identity.Application={cookieValue}");
+                    }
+                    else
+                    {
+                        Console.WriteLine("Warning: No cookie value to add to headers");
+                    }
+                })
+                .WithAutomaticReconnect()
+                .Build();
+
+            try
+            {
+                await hubConnection.StartAsync();
+                Console.WriteLine("Connected to SignalR Hub");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error connecting to SignalR Hub: {ex.Message}");
+            }
+        }
+        else
+        {
+            Console.WriteLine("Current user is null");
+        }
     }
 
     private async Task SendMessage()
     {
-        if (hubConnection is not null)
+        if (currentUser is not null && !string.IsNullOrEmpty(receiverInput) && !string.IsNullOrEmpty(messageInput))
         {
-            await hubConnection.SendAsync("SendMessage", userInput, messageInput);
+            var receiver = await UserManager.FindByNameAsync(receiverInput);
+            if (receiver != null)
+            {
+                messagesManager = new MessagesManager(DbContext, HubContext, currentUser, receiver);
+                await messagesManager.SendMessage(messageInput);
+
+                // Clear the message input
+                messageInput = string.Empty;
+
+                // Refresh messages
+                var chatMessages = await messagesManager.GetMessagesForChat();
+                if (chatMessages != null)
+                {
+                    messages = chatMessages;
+                    StateHasChanged();
+                }
+            }
         }
     }
 

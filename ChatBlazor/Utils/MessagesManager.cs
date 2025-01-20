@@ -2,16 +2,31 @@
 using ChatBlazor.Contexts;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.SignalR;
+using ChatBlazor.Hubs;
+using Microsoft.AspNetCore.SignalR.Client;
+
 
 namespace ChatBlazor.Utils;
 
 public class MessagesManager
 {
-    private readonly AppDbContext _context;
+    
 
-    public MessagesManager(AppDbContext context)
+
+    private readonly AppDbContext _context;
+    private readonly IdentityUser sender;
+    private readonly IdentityUser receiver;
+    private readonly IHubContext<ChatHub> _hubContext;
+
+
+
+    public MessagesManager(AppDbContext context, IHubContext<ChatHub> hubContext, IdentityUser sender, IdentityUser receiver)
     {
         _context = context;
+        _hubContext = hubContext;
+        this.sender = sender;
+        this.receiver = receiver;
     }
 
     /// <summary>
@@ -26,11 +41,46 @@ public class MessagesManager
     }
 
 
+
+    /// <summary>
+    /// Retrieves all messages for a chat between the sender and receiver.
+    /// </summary>
+    /// <returns>
+    /// A task that represents the asynchronous operation. The task result contains:
+    /// <list type="bullet">
+    /// <item>
+    /// <description>A list of <see cref="Message"/> objects if the chat exists.</description>
+    /// </item>
+    /// <item>
+    /// <description><c>null</c> if the chat does not exist.</description>
+    /// </item>
+    /// </list>
+    /// </returns>
+    /// <remarks>
+    /// This method checks if a chat exists between the sender and receiver using the <see cref="CheckIfChatExists"/> method.
+    /// If the chat exists, it returns all messages from the database context.
+    /// </remarks>
+    public async Task<List<Message>?> GetMessagesForChat()
+    {
+        if (CheckIfChatExists(sender, receiver))
+        {
+            var chatId = FindChat(sender, receiver)!.ChatId;
+            return await _context.Messages.Where(m => m.ChatId == chatId).OrderBy(m => m.Timestamp).ToListAsync(); //from the oldest to newest if u want reverse it use OrderByDescending() instead OrderBy 
+        }
+        else return null;
+    }
+
+
+
+
+
+
+
+
+
     /// <summary>
     /// Sends a message from one user to another, creating a new chat if one doesn't exist.
     /// </summary>
-    /// <param name="sender">The <see cref="IdentityUser"/> object representing the user sending the message.</param>
-    /// <param name="receiver">The <see cref="IdentityUser"/> object representing the user receiving the message.</param>
     /// <param name="content">The string content of the message to be sent.</param>
     /// <returns>A <see cref="Task"/> representing the asynchronous operation of sending the message.</returns>
     /// <remarks>
@@ -38,24 +88,49 @@ public class MessagesManager
     /// It then creates a new <see cref="Message"/> object and adds it to the database context.
     /// Note: SignalR hub implementation for real-time messaging is not included in this method.
     /// </remarks>
-    public async Task SendMessage(IdentityUser sender, IdentityUser receiver, string content)
+    public async Task SendMessage(string content)
     {
-        //here do the signalr hub thing 
+        
 
-        // Example:
-        // await _hubContext.Clients.User(receiver.Id).SendAsync("ReceiveMessage", sender.UserName, message);}
         if (!CheckIfChatExists(sender, receiver))
         {
             await _context.Chats.AddAsync(new Chat { User1Id = sender.Id, User2Id = receiver.Id });
+            await _context.SaveChangesAsync();
         }
         Message message = new Message
         {
             Sender = sender,
+            Receiver = receiver,
             Text = content,
             Chat = FindChat(sender, receiver)!
         };
-
+        
+        //add to context
         await _context.Messages.AddAsync(message);
+        try
+        {
+            await _context.SaveChangesAsync();
+        }
+        catch (Exception dbEx)
+        {
+            Console.WriteLine($"Database error: {dbEx.Message}");
+            throw new Exception("Failed to save message to database", dbEx);
+        }
+        /////////////////
+
+
+        var messageDTO = new MessageDto
+        {
+            SenderId = message.SenderId,
+            SenderName = message.Sender.UserName!,
+            ReceiverId = message.ReceiverId,
+            Text = message.Text
+        };
+
+        await _hubContext.Clients.Users(new[] { message.SenderId, message.ReceiverId }).SendAsync("ReceiveMessage", messageDTO);
+
+
+
 
 
     }

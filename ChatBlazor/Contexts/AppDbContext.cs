@@ -40,10 +40,15 @@ namespace ChatBlazor.Contexts
                 .HasOne(m => m.Sender)
                 .WithMany()
                 .HasForeignKey(m => m.SenderId);
+            modelBuilder.Entity<Message>()
+                .HasOne(m => m.Receiver)
+                .WithMany()
+                .HasForeignKey(m => m.ReceiverId);
+
 
             modelBuilder.Entity<Message>()
                 .Property(m => m.Timestamp)
-                .HasDefaultValueSql("GETDATE()");
+                .HasDefaultValueSql("CURRENT_TIMESTAMP");
         }
     }
 }

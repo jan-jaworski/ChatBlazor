@@ -1,11 +1,21 @@
-﻿using Microsoft.AspNetCore.SignalR;
+﻿using ChatBlazor.Models;
+using Microsoft.AspNetCore.SignalR;
+using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
+
 namespace ChatBlazor.Hubs
 {
+    [Authorize]
     public class ChatHub : Hub
     {
-        public async Task SendMessage(string user, string message)
+
+      
+
+        public override async Task OnConnectedAsync()
         {
-            await Clients.All.SendAsync("ReceiveMessage", user, message);
+            await base.OnConnectedAsync();
         }
+
+       
     }
 }
