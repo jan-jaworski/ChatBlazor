@@ -9,6 +9,14 @@ using Microsoft.AspNetCore.SignalR.Client;
 
 namespace ChatBlazor.Utils;
 
+
+/// <summary>
+/// Manages chat messages and user interactions in the ChatBlazor application.
+/// </summary>
+/// <remarks>
+/// This class provides functionality for retrieving users, managing chats,
+/// sending messages, and handling real-time communication using SignalR.
+/// </remarks>
 public class MessagesManager
 {
     
@@ -20,7 +28,13 @@ public class MessagesManager
     private readonly IHubContext<ChatHub> _hubContext;
 
 
-
+    /// <summary>
+    /// Initializes a new instance of the <see cref="MessagesManager"/> class.
+    /// </summary>
+    /// <param name="context">The database context for the application.</param>
+    /// <param name="hubContext">The SignalR hub context for real-time communication.</param>
+    /// <param name="sender">The user sending the message.</param>
+    /// <param name="receiver">The user receiving the message.</param>
     public MessagesManager(AppDbContext context, IHubContext<ChatHub> hubContext, IdentityUser sender, IdentityUser receiver)
     {
         _context = context;
@@ -127,7 +141,18 @@ public class MessagesManager
             Text = message.Text
         };
 
-        await _hubContext.Clients.Users(new[] { message.SenderId, message.ReceiverId }).SendAsync("ReceiveMessage", messageDTO);
+        // Access the static property
+        var connectedUsers = ChatHub.ConnectedUsers;
+
+        // Check if the users are connected
+        if (connectedUsers.TryGetValue(message.SenderId, out var senderConnectionId) &&
+            connectedUsers.TryGetValue(message.ReceiverId, out var receiverConnectionId))
+        {
+            // Send to specific connections
+            await _hubContext.Clients.Clients(senderConnectionId, receiverConnectionId)
+                .SendAsync("ReceiveMessage", messageDTO);
+        }
+        
 
 
 

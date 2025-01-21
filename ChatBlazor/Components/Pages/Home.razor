@@ -56,8 +56,7 @@
         }
         else
         {
-            Console.WriteLine("User is not authenticated");
-            NavigationManager.NavigateTo("/Identity/Account/Login", true);
+            NavigationManager.NavigateTo("/Account/Login", true);
         }
     }
 
@@ -86,25 +85,39 @@
                     }
                     else
                     {
-                        Console.WriteLine("Warning: No cookie value to add to headers");
+                        throw new Exception("No auth cookie found");
                     }
                 })
                 .WithAutomaticReconnect()
                 .Build();
+            hubConnection.On<MessageDto>("ReceiveMessage", (message) =>
+            {
+                // Add the new message to the list
+                messages.Add(new Message
+                    {
+                        SenderId = message.SenderId,
+                        Sender = new IdentityUser { UserName = message.SenderName },
+                        ReceiverId = message.ReceiverId,
+                        Text = message.Text,
+                        Timestamp = DateTime.Now // Assuming you want to set the timestamp to now
+                    });
 
+                // Notify the component that its state has changed
+                InvokeAsync(StateHasChanged);
+            });
             try
             {
                 await hubConnection.StartAsync();
-                Console.WriteLine("Connected to SignalR Hub");
+                //Console.WriteLine("Connected to SignalR Hub");//for debug
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error connecting to SignalR Hub: {ex.Message}");
+                throw new Exception("Error while starting signalR connection", ex);
             }
         }
         else
         {
-            Console.WriteLine("Current user is null");
+            NavigationManager.NavigateTo("/Account/Login", true);
         }
     }
 
