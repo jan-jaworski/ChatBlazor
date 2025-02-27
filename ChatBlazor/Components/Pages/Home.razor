@@ -23,20 +23,80 @@
 
 <PageTitle>Home</PageTitle>
 
+<!-- old by the code may be useful :p-->
+@* 
 <div>
     <input @bind="receiverInput" placeholder="Receiver's username" />
     <input @bind="messageInput" placeholder="Message" />
     <button class="btn btn-primary" @onclick="SendMessage">Send</button>
 </div>
-
-<ul>
+ *@
+@* <ul>
     @foreach (var message in messages)
     {
         <li>@message.Sender.UserName: @message.Text</li>
     }
-</ul>
+</ul> *@
+
+
+<div class="container-fluid">
+    <div class="row">
+        <!--   users list for selection    -->
+        <div id="ChatUsers" class="col-md-2">
+            <h3>Chats</h3>
+            @foreach (var user in users)
+            {
+                <div class="card">
+                    <div class="card-body">@user.UserName</div>
+                </div>
+            }
+        </div>
+
+
+
+
+
+        <!--   interface for messaging     -->
+        <div class="col-md-10 d-flex flex-column h-100">
+            <div class="flex-grow-1">
+                <!-- Your chat messages or other content goes here -->
+            </div>
+
+            <div class="mt-auto">
+                <div class="input-group mb-3">
+                    <input type="text" class="form-control" @bind="messageInput" placeholder="Message" />
+                    <!-- remember to set an event -->
+                    <button class="btn btn-primary" type="button">Send</button>
+                </div>
+            </div>
+        </div>
+
+
+    </div>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 @code {
+    private List<IdentityUser> users = new();
     private List<Message> messages = new();
     private string? receiverInput;
     private string? messageInput;
@@ -114,6 +174,11 @@
             {
                 throw new Exception("Error while starting signalR connection", ex);
             }
+
+            // Get the list of users
+            messagesManager = new MessagesManager(DbContext, HubContext, currentUser, null);
+            users = await messagesManager.GetUsers();
+            await InvokeAsync(StateHasChanged);
         }
         else
         {

@@ -24,8 +24,30 @@ public class MessagesManager
 
     private readonly AppDbContext _context;
     private readonly IdentityUser sender;
-    private readonly IdentityUser receiver;
+    private readonly IdentityUser? receiver;
     private readonly IHubContext<ChatHub> _hubContext;
+
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="MessagesManager"/> class with a sender but without a specific receiver.
+    /// </summary>
+    /// <param name="context">The database context for the application, providing access to the underlying data store.</param>
+    /// <param name="hubContext">The SignalR hub context for real-time communication, enabling broadcasting messages to connected clients.</param>
+    /// <param name="sender">The identity of the user sending messages, representing the current user of the messaging system.</param>
+    /// <remarks>
+    /// This constructor is typically used when initializing the MessagesManager for general operations
+    /// that don't require a specific receiver, such as retrieving all users or managing global chat functionalities.
+    /// </remarks>
+    public MessagesManager(AppDbContext context, IHubContext<ChatHub> hubContext, IdentityUser sender)
+    {
+        _context = context;
+        _hubContext = hubContext;
+        this.sender = sender;
+    }
+
+
+
+
 
 
     /// <summary>
