@@ -10,6 +10,7 @@
 @using Microsoft.AspNetCore.Identity
 @using Blazored.LocalStorage
 @using ChatBlazor.Hubs
+@inject IJSRuntime JSRuntime
 @inject ILocalStorageService LocalStorage
 @inject NavigationManager NavigationManager
 @inject AuthenticationStateProvider AuthStateProvider
@@ -47,7 +48,7 @@
             @foreach (var user in users)
             {
                 <div class="card">
-                    <div class="card-body">@user.UserName</div>
+                    <div class="card-body" @onclick="() => SwitchChat(user.UserName)">@user.UserName</div>
                 </div>
             }
         </div>
@@ -57,20 +58,32 @@
 
 
         <!--   interface for messaging     -->
-        <div class="col-md-10 d-flex flex-column h-100">
-            <div class="flex-grow-1">
-                <!-- Your chat messages or other content goes here -->
-            </div>
+        @if (receiverInput != null)
+        {
+            <div class="col-md-10 d-flex flex-column h-100">
+                <div class="messages-container" @ref="messagesContainerRef">
+                    @foreach (var message in messages)
+                    {
+                        if (CheckIfCurrentUser(message.Sender.UserName))
+                        {
+                            <div class="message our-message">@message.Text</div>
+                        }
+                        else
+                        {
+                            <div class="message someones-message">@message.Text</div>
+                        }
+                    }
+                </div>
 
-            <div class="mt-auto">
-                <div class="input-group mb-3">
-                    <input type="text" class="form-control" @bind="messageInput" placeholder="Message" />
-                    <!-- remember to set an event -->
-                    <button class="btn btn-primary" type="button">Send</button>
+                <div class="mt-auto">
+                    <div class="input-group mb-3">
+                        <input type="text" class="form-control" @bind="messageInput" placeholder="Message" />
+                        <!-- remember to set an event -->
+                        <button class="btn btn-primary" type="button" @onclick="SendMessage">Send</button>
+                    </div>
                 </div>
             </div>
-        </div>
-
+        }
 
     </div>
 </div>
@@ -104,7 +117,7 @@
     private IdentityUser? currentUser;
     private HubConnection? hubConnection;
     private bool isInitialized = false;
-
+    private ElementReference messagesContainerRef;
     protected override async Task OnInitializedAsync()
     {
         var authState = await AuthStateProvider.GetAuthenticationStateAsync();
@@ -127,6 +140,7 @@
             await InitializeHubConnection();
             isInitialized = true;
         }
+        await ScrollToBottom();
     }
 
     private async Task InitializeHubConnection()
@@ -186,6 +200,51 @@
         }
     }
 
+    private async Task ScrollToBottom()
+    {
+        await JSRuntime.InvokeVoidAsync("scrollToBottom", messagesContainerRef);
+    }
+
+    private async Task SwitchChat(string receiverName)
+    {
+        if (currentUser != null && !string.IsNullOrEmpty(receiverName))
+        {
+            receiverInput = receiverName;
+            var receiver = await UserManager.FindByNameAsync(receiverName);
+            if (receiver != null)
+            {
+                messagesManager = new MessagesManager(DbContext, HubContext, currentUser, receiver);
+                var chatMessages = await messagesManager.GetMessagesForChat();
+                if (chatMessages != null)
+                {
+                    messages = chatMessages;
+                    StateHasChanged();
+                }
+            }
+        }
+    }
+
+
+
+
+
+
+    /// <summary>
+    /// This checks if given username is our current user
+    /// </summary>
+    /// <param name="userName">username to check</param>
+    /// <returns></returns>
+    private bool CheckIfCurrentUser(string userName)
+    {
+        return currentUser.UserName == userName;
+    }
+
+
+
+    /// <summary>
+    /// This method sends a message to the receiver from messageInput
+    /// </summary>
+    ///
     private async Task SendMessage()
     {
         if (currentUser is not null && !string.IsNullOrEmpty(receiverInput) && !string.IsNullOrEmpty(messageInput))
