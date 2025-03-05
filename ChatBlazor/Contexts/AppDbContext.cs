@@ -34,16 +34,19 @@ namespace ChatBlazor.Contexts
             modelBuilder.Entity<Message>()
                 .HasOne(m => m.Chat)
                 .WithMany(c => c.Messages)
-                .HasForeignKey(m => m.ChatId);
+                .HasForeignKey(m => m.ChatId)
+                .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<Message>()
                 .HasOne(m => m.Sender)
                 .WithMany()
-                .HasForeignKey(m => m.SenderId);
+                .HasForeignKey(m => m.SenderId)
+                .OnDelete(DeleteBehavior.Restrict);
             modelBuilder.Entity<Message>()
                 .HasOne(m => m.Receiver)
                 .WithMany()
-                .HasForeignKey(m => m.ReceiverId);
+                .HasForeignKey(m => m.ReceiverId)
+                .OnDelete(DeleteBehavior.Restrict);
 
 
             modelBuilder.Entity<Message>()
