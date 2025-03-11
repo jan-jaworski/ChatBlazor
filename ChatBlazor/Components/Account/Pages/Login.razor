@@ -25,12 +25,9 @@
                 <hr />
                 <ValidationSummary class="text-danger" role="alert" /> <!-- this is for validation it shows the summary of errors -->
                 <div class="form-floating mb-3">
-                    <InputText @bind-Value="Input.Email" class="form-control" autocomplete="username" aria-required="true" placeholder="name@example.com" /> <!-- aria required is vor validation system to inform program that this field is required -->
-                    <label for="email" class="form-label">Email</label>
-                    <ValidationMessage For="() => Input.Email" class="text-danger" /> <!-- this validate the e-mail field  this is the place is error shown example: The Email field is not a valid e-mail address. 
-                        you can change the location of it so the message will be shown in diffrent location
-
-                    -->
+                    <InputText @bind-Value="Input.Username" class="form-control" autocomplete="username" aria-required="true" placeholder="username" />
+                    <label for="username" class="form-label">Username</label>
+                    <ValidationMessage For="() => Input.Username" class="text-danger" />
                 </div>
                 <div class="form-floating mb-3">
                     <InputText type="password" @bind-Value="Input.Password" class="form-control" autocomplete="current-password" aria-required="true" placeholder="password" />
@@ -83,7 +80,7 @@
     {
         // This doesn't count login failures towards account lockout
         // To enable password failures to trigger account lockout, set lockoutOnFailure: true
-        var result = await SignInManager.PasswordSignInAsync(Input.Email, Input.Password, Input.RememberMe, lockoutOnFailure: false);
+        var result = await SignInManager.PasswordSignInAsync(Input.Username, Input.Password, Input.RememberMe, lockoutOnFailure: false);
         if (result.Succeeded)
         {
             Logger.LogInformation("User logged in.");
@@ -109,8 +106,8 @@
     private sealed class InputModel
     {
         [Required]
-        [EmailAddress]
-        public string Email { get; set; } = "";
+        [Display(Name = "Username")]
+        public string Username { get; set; } = "";
 
         [Required]
         [DataType(DataType.Password)]

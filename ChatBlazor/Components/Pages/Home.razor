@@ -217,7 +217,12 @@
                 var chatMessages = await messagesManager.GetMessagesForChat();
                 if (chatMessages != null)
                 {
-                    messages = chatMessages;
+                    messages = chatMessages; 
+                    StateHasChanged();
+                }
+                else
+                {
+                    messages.Clear();
                     StateHasChanged();
                 }
             }
