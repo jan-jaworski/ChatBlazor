@@ -24,43 +24,61 @@
 
 <PageTitle>Home</PageTitle>
 
-<!-- old code but may be useful :p-->
-@* 
-<div>
-    <input @bind="receiverInput" placeholder="Receiver's username" />
-    <input @bind="messageInput" placeholder="Message" />
-    <button class="btn btn-primary" @onclick="SendMessage">Send</button>
-</div>
- *@
-@* <ul>
-    @foreach (var message in messages)
-    {
-        <li>@message.Sender.UserName: @message.Text</li>
-    }
-</ul> *@
 
 
 <div class="container-fluid">
     <div class="row">
         <!--   users list for selection    -->
-        <div id="ChatUsers" class="col-md-2">
-            <h3>Chats</h3>
-            @foreach (var user in users)
+        <div id="ChatUsers" class="col-md-4">
+            
+
+            @foreach (var userCard in userCards)
             {
-                <div class="card">
-                    <div class="card-body" @onclick="() => SwitchChat(user.UserName)">@user.UserName</div>
+
+                <div class="chat-container" @onclick="() => SwitchChat(userCard.UserName)">
+                    <div class="chat-message position-relative">
+                        <div class="user-info">
+                            <div class="user-name">@userCard.UserName</div>
+                            @if (userCard.IsOnline) //online status
+                            {
+                                <div class="online-status">
+                                    <div class="status-dot"></div>
+                                    <span>Online</span>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="offline-status">
+                                    <div class="status-dot-offline"></div>
+                                    <span>Offline</span>
+                                </div>
+                            }
+                            @if (userCard.LastMessageTime is not null) //to check if not null
+                            {
+                                <div class="timestamp">@userCard.LastMessageTime</div>
+                            }
+                            else
+                            {
+                                <div class="timestamp"></div>
+                            }
+                        </div>
+                        <div class="message-text">@userCard.LastMessageText</div>
+                    </div>
                 </div>
+
+
+              
             }
         </div>
 
 
 
-
+        <!--   todo: user search  -->
 
         <!--   interface for messaging     -->
         @if (receiverInput != null)
         {
-            <div class="col-md-10 d-flex flex-column h-100">
+            <div class="col-md-8 d-flex flex-column h-100">
                 <div class="messages-container" @ref="messagesContainerRef">
                     @foreach (var message in messages)
                     {
@@ -110,7 +128,10 @@
 
 @code {
     private List<IdentityUser> users = new();
+    private List<UserCard> userCards = new();
     private List<Message> messages = new();
+
+
     private string? receiverInput;
     private string? messageInput;
     private MessagesManager? messagesManager;
@@ -192,6 +213,7 @@
             // Get the list of users
             messagesManager = new MessagesManager(DbContext, HubContext, currentUser, null);
             users = await messagesManager.GetUsers();
+            userCards = await messagesManager.GetUserCards();
             await InvokeAsync(StateHasChanged);
         }
         else
@@ -270,6 +292,8 @@
                     messages = chatMessages;
                     StateHasChanged();
                 }
+                userCards = await messagesManager.GetUserCards();
+
             }
         }
     }

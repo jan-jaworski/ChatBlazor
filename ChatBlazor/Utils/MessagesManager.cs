@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.SignalR;
 using ChatBlazor.Hubs;
 using Microsoft.AspNetCore.SignalR.Client;
+using System.Globalization;
 
 
 namespace ChatBlazor.Utils;
@@ -19,7 +20,7 @@ namespace ChatBlazor.Utils;
 /// </remarks>
 public class MessagesManager
 {
-    
+
 
 
     private readonly AppDbContext _context;
@@ -44,6 +45,8 @@ public class MessagesManager
         _hubContext = hubContext;
         this.sender = sender;
     }
+
+
 
 
 
@@ -77,6 +80,41 @@ public class MessagesManager
     }
 
 
+    public async Task<List<UserCard>> GetUserCards()
+    {
+        var users = await GetUsers();
+        var userCards = new List<UserCard>();
+        foreach (var user in users)
+        {
+            string username = user.UserName;
+            var lastMessage = await GetLastMessageForChat(user);
+            string lastMessageText = lastMessage is not null ? lastMessage.Text : "";
+            CultureInfo provider = new CultureInfo("pl-PL");
+            string lastMessageTime;
+
+            if (lastMessage?.Timestamp.Date == DateTime.Today)
+            {
+                lastMessageTime = lastMessage.Timestamp.ToString("t", provider);
+            }
+            else if (lastMessage is not null)
+            {
+                lastMessageTime = lastMessage.Timestamp.ToString("f");
+            }
+            else
+            {
+                lastMessageTime = "";
+            }
+
+
+            UserCard userCard = new UserCard(username, CheckIfUserOnline(user), lastMessageTime, lastMessageText);
+            userCards.Add(userCard);
+        }
+        return userCards;
+    }
+
+
+
+
 
     /// <summary>
     /// Retrieves all messages for a chat between the sender and receiver.
@@ -107,6 +145,37 @@ public class MessagesManager
     }
 
 
+    /// <summary>
+    /// Retrieves the most recent message from the chat between the sender and receiver.
+    /// </summary>
+    /// <returns>
+    /// A task that represents the asynchronous operation. The task result contains:
+    /// <list type="bullet">
+    ///   <item>
+    ///     <description>The most recent <see cref="Message"/> object if the chat exists and contains messages.</description>
+    ///   </item>
+    ///   <item>
+    ///     <description><c>null</c> if the chat does not exist or contains no messages.</description>
+    ///   </item>
+    /// </list>
+    /// </returns>
+    /// <remarks>
+    /// This method first checks if a chat exists between the sender and receiver using the <see cref="CheckIfChatExists"/> method.
+    /// If the chat exists, it queries the database for the most recent message in that chat, ordered by timestamp.
+    /// </remarks>
+    public async Task<Message?> GetLastMessageForChat(IdentityUser receiverUser)
+    {
+        if (CheckIfChatExists(sender, receiverUser))
+        {
+            var chatId = FindChat(sender, receiverUser)!.ChatId;
+            return await _context.Messages
+                .Where(m => m.ChatId == chatId)
+                .OrderByDescending(m => m.Timestamp)
+                .FirstOrDefaultAsync();
+        }
+        else return null;
+    }
+
 
 
 
@@ -126,7 +195,7 @@ public class MessagesManager
     /// </remarks>
     public async Task SendMessage(string content)
     {
-        
+
 
         if (!CheckIfChatExists(sender, receiver))
         {
@@ -140,7 +209,7 @@ public class MessagesManager
             Text = content,
             Chat = FindChat(sender, receiver)!
         };
-        
+
         //add to context
         await _context.Messages.AddAsync(message);
         try
@@ -174,7 +243,7 @@ public class MessagesManager
             await _hubContext.Clients.Clients(senderConnectionId, receiverConnectionId)
                 .SendAsync("ReceiveMessage", messageDTO);
         }
-        
+
 
 
 
@@ -210,5 +279,13 @@ public class MessagesManager
     /// This method searches for a chat where the two specified users are participants, regardless of their order (User1 or User2).
     /// </remarks>
     private Chat? FindChat(IdentityUser User1, IdentityUser User2) => _context.Chats.FirstOrDefault(c => (c.User1Id == User1.Id && c.User2Id == User2.Id) || (c.User1Id == User2.Id && c.User2Id == User1.Id));
+
+    private static bool CheckIfUserOnline(IdentityUser user)
+    {
+        if (ChatHub.ConnectedUsers.ContainsKey(user.Id)) return true;
+        else return false;
+    }
+    
+
 
 }
