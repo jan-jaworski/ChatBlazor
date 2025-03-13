@@ -91,25 +91,33 @@ public class MessagesManager
             string lastMessageText = lastMessage is not null ? lastMessage.Text : "";
             CultureInfo provider = new CultureInfo("pl-PL");
             string lastMessageTime;
+            DateTime lastMessageDate;
 
             if (lastMessage?.Timestamp.Date == DateTime.Today)
             {
                 lastMessageTime = lastMessage.Timestamp.ToString("t", provider);
+                lastMessageDate = lastMessage.Timestamp;
             }
             else if (lastMessage is not null)
             {
                 lastMessageTime = lastMessage.Timestamp.ToString("f");
+                lastMessageDate = lastMessage.Timestamp;
             }
             else
             {
                 lastMessageTime = "";
+                lastMessageDate = DateTime.MinValue;
             }
 
 
-            UserCard userCard = new UserCard(username, CheckIfUserOnline(user), lastMessageTime, lastMessageText);
+            UserCard userCard = new UserCard(username, CheckIfUserOnline(user), lastMessageTime, lastMessageText, lastMessageDate);
+
+            
+
             userCards.Add(userCard);
         }
-        return userCards;
+
+        return userCards.OrderByDescending(c => c.LastMessageDateTime).ToList();
     }
 
 
