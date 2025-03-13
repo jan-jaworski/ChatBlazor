@@ -199,7 +199,7 @@ public class MessagesManager
     /// <remarks>
     /// This method checks if a chat exists between the sender and receiver. If not, it creates a new chat.
     /// It then creates a new <see cref="Message"/> object and adds it to the database context.
-    /// Note: SignalR hub implementation for real-time messaging is not included in this method.
+    /// Note: SignalR hub implementation for real-time messaging is included in this method.
     /// </remarks>
     public async Task SendMessage(string content)
     {
