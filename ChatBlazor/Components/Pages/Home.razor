@@ -30,9 +30,9 @@
     <div class="row">
         <!--   users list for selection    -->
         <div id="ChatUsers" class="col-md-4">
-            
 
-            @foreach (var userCard in userCards)
+            <InputText @bind-Value="searchInput" @oninput="OnSearchInput" placeholder="Search users" class="form-control mb-3"/>
+            @foreach (var userCard in filteredUserCards)
             {
 
                 <div class="chat-container" @onclick="() => SwitchChat(userCard.UserName)">
@@ -67,14 +67,13 @@
                 </div>
 
 
-              
+
             }
         </div>
 
 
 
         <!--   todo: user search  -->
-
         <!--   interface for messaging     -->
         @if (receiverInput != null)
         {
@@ -129,16 +128,22 @@
 @code {
     private List<IdentityUser> users = new();
     private List<UserCard> userCards = new();
+    private List<UserCard> filteredUserCards = new();
+
     private List<Message> messages = new();
 
 
     private string? receiverInput;
     private string? messageInput;
+    private string searchInput = string.Empty;
+
     private MessagesManager? messagesManager;
     private IdentityUser? currentUser;
     private HubConnection? hubConnection;
     private bool isInitialized = false;
     private ElementReference messagesContainerRef;
+    private CancellationTokenSource debounceToken = new();
+
     protected override async Task OnInitializedAsync()
     {
         var authState = await AuthStateProvider.GetAuthenticationStateAsync();
@@ -214,6 +219,7 @@
             messagesManager = new MessagesManager(DbContext, HubContext, currentUser, null);
             users = await messagesManager.GetUsers();
             userCards = await messagesManager.GetUserCards();
+            filteredUserCards = userCards;
             await InvokeAsync(StateHasChanged);
         }
         else
@@ -239,7 +245,7 @@
                 var chatMessages = await messagesManager.GetMessagesForChat();
                 if (chatMessages != null)
                 {
-                    messages = chatMessages; 
+                    messages = chatMessages;
                     StateHasChanged();
                 }
                 else
@@ -297,6 +303,31 @@
             }
         }
     }
+
+
+    private async Task OnSearchInput(ChangeEventArgs e)
+    {
+        searchInput = e.Value?.ToString() ?? string.Empty;
+        debounceToken.Cancel();
+        debounceToken.Dispose();
+        debounceToken = new CancellationTokenSource();
+        await Task.Delay(500, debounceToken.Token);
+        FilterUserCards();
+    }
+
+    private void FilterUserCards()
+    {
+        if (string.IsNullOrEmpty(searchInput))
+        {
+            filteredUserCards = userCards;
+        }
+        else
+        {
+            filteredUserCards = userCards.Where(u => u.UserName.Contains(searchInput, StringComparison.OrdinalIgnoreCase)).ToList();
+        }
+
+    }
+
 
     public async ValueTask DisposeAsync()
     {
