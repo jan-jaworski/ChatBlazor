@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace ChatBlazor.Migrations
 {
     /// <inheritdoc />
-    public partial class NewDbMigration : Migration
+    public partial class AfterProd2nd : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)

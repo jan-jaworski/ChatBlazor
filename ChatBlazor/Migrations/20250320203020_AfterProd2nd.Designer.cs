@@ -11,8 +11,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ChatBlazor.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250305150942_NewDbMigration")]
-    partial class NewDbMigration
+    [Migration("20250320203020_AfterProd2nd")]
+    partial class AfterProd2nd
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
