@@ -20,8 +20,19 @@ namespace ChatBlazor.Hubs
             if (userId != null)
             {
                 connectedUsers.Add(userId,Context.ConnectionId);
+                await NotifyOnlineStatus(userId);
             }
             await base.OnConnectedAsync();
+        }
+
+        public async Task NotifyOnlineStatus(string userId)
+        {
+            await Clients.All.SendAsync("ReceiveUserStatus", userId, true);
+        }
+
+        public async Task NotifyOfflineStatus(string userId)
+        {
+            await Clients.All.SendAsync("ReceiveUserStatus", userId, false);
         }
 
 
@@ -34,6 +45,7 @@ namespace ChatBlazor.Hubs
             if(userId != null)
             {
                 connectedUsers.Remove(userId);
+                NotifyOfflineStatus(userId);
             }
             return base.OnDisconnectedAsync(exception);
         }

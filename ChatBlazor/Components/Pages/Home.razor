@@ -31,7 +31,7 @@
         <!--   users list for selection    -->
         <div id="ChatUsers" class="col-md-4">
 
-            <InputText @bind-Value="searchInput" @oninput="OnSearchInput" placeholder="Search users" class="form-control mb-3"/>
+            <InputText @bind-Value="searchInput" @oninput="OnSearchInput" placeholder="Search users" class="form-control mb-3" />
             @foreach (var userCard in filteredUserCards)
             {
 
@@ -190,6 +190,7 @@
                 })
                 .WithAutomaticReconnect()
                 .Build();
+            //Receive new message from hub
             hubConnection.On<MessageDto>("ReceiveMessage", (message) =>
             {
                 // Add the new message to the list
@@ -205,6 +206,23 @@
                 // Notify the component that its state has changed
                 InvokeAsync(StateHasChanged);
             });
+
+            //Receive user status from hub
+            hubConnection.On<string, bool>("ReceiveUserStatus", (userId, isOnline) =>
+            {
+                string username = users.FirstOrDefault(u => u.Id == userId)?.UserName ?? string.Empty;
+                if (username != string.Empty)
+                {
+                    if (userCards.Any(u => u.UserName == username))
+                    {
+                        userCards.First(u => u.UserName == username).IsOnline = isOnline;
+                        InvokeAsync(StateHasChanged);
+                    }
+                }
+            });
+
+
+
             try
             {
                 await hubConnection.StartAsync();
