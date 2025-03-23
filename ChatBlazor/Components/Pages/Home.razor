@@ -10,6 +10,7 @@
 @using Microsoft.AspNetCore.Identity
 @using Blazored.LocalStorage
 @using ChatBlazor.Hubs
+@using System.Globalization
 @inject IJSRuntime JSRuntime
 @inject ILocalStorageService LocalStorage
 @inject NavigationManager NavigationManager
@@ -92,11 +93,12 @@
                     }
                 </div>
 
-                <div class="mt-auto">
-                    <div class="input-group mb-3">
-                        <input type="text" class="form-control" @bind="messageInput" placeholder="Message" />
-                        <!-- remember to set an event -->
-                        <button class="btn btn-primary" type="button" @onclick="SendMessage">Send</button>
+                <div class="chat-input mt-auto">
+                    <div class="input-group">
+                        <input type="text" class="form-control" @bind="messageInput" @bind:event="oninput" @onkeypress="HandleKeyPress" placeholder="Type a message..." />
+                        <button class="btn" type="button" @onclick="SendMessage">
+                            Send
+                        </button>
                     </div>
                 </div>
             </div>
@@ -352,6 +354,14 @@
         if (hubConnection is not null)
         {
             await hubConnection.DisposeAsync();
+        }
+    }
+
+    private void HandleKeyPress(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            SendMessage();
         }
     }
 }

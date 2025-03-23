@@ -1,38 +1,73 @@
-﻿.messages-container {
+﻿/*#ChatUsers {
+    border-right-style: solid;
+    border-right-color: #808080;
+    border-right-width: 2px;
+}
+
+*/
+
+.messages-container {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
     overflow-y: auto;
-    max-height: 70vh; /* Adjust as needed */
+    max-height: 90vh; /* Adjust as needed */
 }
 
+    .messages-container::-webkit-scrollbar {
+        width: 10px;
+    }
+    .messages-container::-webkit-scrollbar-track {
+        background: white;
+    }
+
+    .messages-container::-webkit-scrollbar-thumb {
+        background: #cecece;
+        border-radius: 5px;
+    }
+        .messages-container::-webkit-scrollbar-thumb:hover {
+            background: #757575;
+        }
+
+
+
 .message {
-    max-width: 70%;
+    max-width: 90%;
     margin-bottom: 10px;
-    padding: 10px;
-    border-radius: 10px;
+    padding: 12px;
+    border-radius: 18px;
     word-wrap: break-word;
+    word-break: break-word;
+    overflow-wrap: break-word;
+    hyphens: auto;
+    white-space: pre-wrap;
 }
 
 .our-message {
     align-self: flex-end;
-    background-color: #b574ff;
+    background-color: #2eb4ea;
+    border-bottom-right-radius: 3px;
+    color: white;
 }
 
 .someones-message {
     align-self: flex-start;
     background-color: #cecece;
-    
+    border-bottom-left-radius: 3px;
 }
+
 
 .chat-container {
     max-width: 800px;
     margin: 20px auto;
-    border-radius: 12px;
+    border-radius: 6px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     overflow: hidden;
-    background-color: #d9e2fa;
+    background-color: white;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    border-style: solid;
+    border-color: #636363;
+    border-width: 2px;
 }
 
 .chat-message {
@@ -56,14 +91,14 @@
 .online-status {
     display: flex;
     align-items: center;
-    color: #28a745;
+    color: #16ff32;
     font-size: 16px;
 }
 
 .status-dot {
     width: 10px;
     height: 10px;
-    background-color: #28a745;
+    background-color: #16ff32;
     border-radius: 50%;
     margin-right: 5px;
 }
@@ -95,3 +130,47 @@
     color: #adb5bd;
     font-size: 14px;
 }
+
+.chat-input {
+    margin-top: auto;
+    padding: 7px;
+    max-height: 7vh;
+    
+}
+
+    .chat-input .input-group {
+        overflow: hidden;
+        border: 2px solid #2e99ea;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+        border-radius: 6px;
+        background-color: #2e99ea;
+    }
+
+    .chat-input .form-control {
+        border: none;
+        padding: 12px 20px;
+        font-size: 15px;
+        background-color: white;
+    }
+
+        .chat-input .form-control:focus {
+            box-shadow: none;
+            border-color: transparent;
+        }
+
+    .chat-input .btn {
+        border-radius: 0;
+        background-color: #2e99ea;
+        border: none;
+        color: white;
+        padding: 0 20px;
+        transition: background-color 0.2s;
+    }
+
+        .chat-input .btn:hover {
+            background-color: #073446;
+        }
+
+        .chat-input .btn:active {
+            background-color: #05232e;
+        }
