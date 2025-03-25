@@ -79,6 +79,11 @@
         @if (receiverInput != null)
         {
             <div class="col-md-8 d-flex flex-column h-100">
+                <div class="chat-header">
+                    <div class="user-info">
+                        <div class="user-name">@receiverInput</div>
+                    </div>
+                </div>
                 <div class="messages-container" @ref="messagesContainerRef">
                     @foreach (var message in messages)
                     {

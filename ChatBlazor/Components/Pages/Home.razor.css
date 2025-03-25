@@ -11,7 +11,7 @@
     flex-direction: column;
     align-items: flex-start;
     overflow-y: auto;
-    max-height: 90vh; /* Adjust as needed */
+    max-height: 84vh; /* Adjust as needed */
 }
 
     .messages-container::-webkit-scrollbar {
