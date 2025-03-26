@@ -10,10 +10,6 @@ ChatBlazor is a real-time chat application built using Blazor Server, SignalR, a
 - User search functionality
 - Responsive design
 
-## Getting Started
-
-You can access the live application at [ChatBlazor Production Server](http://chatblazor.azurewebsites.net/).
-
 ## License
 
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for more details.
