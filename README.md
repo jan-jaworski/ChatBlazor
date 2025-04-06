@@ -20,6 +20,8 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 
 ## Acknowledgements
 
+
+- [Microsoft.AspNetCore](https://github.com/dotnet/aspnetcore)
 - [Blazored.LocalStorage](https://github.com/Blazored/LocalStorage)
 - [Microsoft.AspNetCore.SignalR](https://github.com/dotnet/aspnetcore/tree/main/src/SignalR)
 - [Microsoft.EntityFrameworkCore](https://github.com/dotnet/efcore)
