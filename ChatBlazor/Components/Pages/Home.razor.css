@@ -70,6 +70,39 @@
     border-width: 2px;
 }
 
+@media only screen and (max-width: 800px) {
+    .chat-container {
+        border-radius: 200px;
+        
+    }
+    .online-status, .offline-status {
+        visibility: hidden;
+    }
+    .online-status .status-dot {
+        visibility: visible;
+    }
+    .chat-container .timestamp {
+        visibility: hidden;
+    }
+    .chat-container .user-name {
+        font-size: 15px;
+    }
+    .chat-container .message-text {
+        visibility: hidden;
+        display: none;
+    }
+    .messages-container {
+        max-height: 75vh; /* Adjust as needed */
+    }
+}
+
+@media only screen and (max-width: 1300px) {
+    .chat-container .timestamp {
+        visibility: hidden;
+    }
+}
+
+
 .chat-message {
     padding: 20px 24px;
     border-bottom: 1px solid #f0f0f0;

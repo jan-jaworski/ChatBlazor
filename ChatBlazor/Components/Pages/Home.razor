@@ -28,9 +28,9 @@
 
 
 <div class="container-fluid">
-    <div class="row">
+    <div class="row flex-nowrap">
         <!--   users list for selection    -->
-        <div id="ChatUsers" class="col-md-4">
+        <div id="ChatUsers" class="col-3 col-md-4">
 
             <InputText @bind-Value="searchInput" @oninput="OnSearchInput" placeholder="Search users" class="form-control mb-3" />
             @foreach (var userCard in filteredUserCards)
@@ -78,7 +78,7 @@
         <!--   interface for messaging     -->
         @if (receiverInput != null)
         {
-            <div class="col-md-8 d-flex flex-column h-100">
+            <div class="col-9 col-md-8 d-flex flex-column">
                 <div class="chat-header">
                     <div class="user-info">
                         <div class="user-name">@receiverInput</div>
@@ -102,7 +102,7 @@
                     <div class="input-group">
                         <input type="text" class="form-control" @bind="messageInput" @bind:event="oninput" @onkeypress="HandleKeyPress" placeholder="Type a message..." />
                         <button class="btn" type="button" @onclick="SendMessage">
-                            Send
+                            <i class="bi bi-send"></i>
                         </button>
                     </div>
                 </div>
