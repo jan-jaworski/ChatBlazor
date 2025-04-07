@@ -5,6 +5,8 @@ VisualStudioVersion = 17.12.35514.174
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChatBlazor", "ChatBlazor\ChatBlazor.csproj", "{2049BE62-1D23-4EFE-A9D4-DB76B279F4C9}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChatBlazorMobile", "ChatBlazorMobile\ChatBlazorMobile.csproj", "{106909CE-6C4C-458B-BF99-F23149CD61E6}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,12 @@ Global
 		{2049BE62-1D23-4EFE-A9D4-DB76B279F4C9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2049BE62-1D23-4EFE-A9D4-DB76B279F4C9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2049BE62-1D23-4EFE-A9D4-DB76B279F4C9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{106909CE-6C4C-458B-BF99-F23149CD61E6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{106909CE-6C4C-458B-BF99-F23149CD61E6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{106909CE-6C4C-458B-BF99-F23149CD61E6}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{106909CE-6C4C-458B-BF99-F23149CD61E6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{106909CE-6C4C-458B-BF99-F23149CD61E6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{106909CE-6C4C-458B-BF99-F23149CD61E6}.Release|Any CPU.Deploy.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
