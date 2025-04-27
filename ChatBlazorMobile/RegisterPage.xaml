@@ -1,25 +1,36 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="ChatBlazorMobile.MainPage"
-             Title="Sign in">
+             x:Class="ChatBlazorMobile.RegisterPage"
+             Title="RegisterPage">
     <Grid RowDefinitions=".1*,.5*,.4*" ColumnDefinitions="*" Margin="20">
         <VerticalStackLayout Grid.Row="1">
-            <Label Text="Login" FontSize="Large"/>
+            <Label Text="Username" FontSize="Large"/>
             <Border StrokeShape="RoundRectangle 8,8,8,8">
-                <Entry x:Name="loginEntry" Placeholder="Login"/>
+                <Entry x:Name="loginEntry" Placeholder="Username"/>
             </Border>
+
+            <Label Text="Email" FontSize="Large"/>
+            <Border StrokeShape="RoundRectangle 8,8,8,8">
+                <Entry x:Name="emailEntry" Placeholder="Username"/>
+            </Border>
+
             <Label Text="Password" FontSize="Large"/>
             <Border StrokeShape="RoundRectangle 8,8,8,8" >
                 <Entry IsPassword="True" x:Name="passwordEntry" Placeholder="Password" />
             </Border>
-            
+
+            <Label Text="Repeat Password" FontSize="Large"/>
+            <Border StrokeShape="RoundRectangle 8,8,8,8" >
+                <Entry IsPassword="True" x:Name="repeat_passwordEntry" Placeholder="Please Repeat the Password" />
+            </Border>
+
         </VerticalStackLayout>
         <Grid Grid.Row="2" RowDefinitions=".2*,.2*,.6*" ColumnDefinitions=".7*,.3*" RowSpacing="10">
             <Button Text="Sign in"/>
-            <Button Grid.Row="1" Text="Register Page" BackgroundColor="LightGrey" TextColor="Black" x:Name="registerButton" Clicked="registerButton_Clicked"/>
+            <Button Grid.Row="1" Text="Register Page" BackgroundColor="LightGrey" TextColor="Black"/>
 
         </Grid>
-        
+
     </Grid>
 </ContentPage>
